@@ -1,3 +1,3 @@
 #!/bin/sh
 
-docker build -t kopterio/node-yarn:7.10 .
+docker build -t kopterio/node-yarn:8.1.4 .
