@@ -1,23 +1,23 @@
-FROM node:8.2.1
+# -- docker --
+FROM node:8.2.1-alpine as docker
 
-ARG DEBIAN_FRONTEND=noninteractive
+ENV DOCKER_VERSION 17.07.0-ce-rc2
+ENV DOCKER_ARCH    x86_64
+ADD "https://download.docker.com/linux/static/test/${DOCKER_ARCH}/docker-${DOCKER_VERSION}.tgz" /tmp/docker
 
-# install Facebook Yarn
-RUN apt-get update -yq \
-    && apt-get install -yq apt-transport-https curl ca-certificates gnupg2 software-properties-common \
-    && curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
-    && echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list \
-    && apt-get update -yq && apt-get install -yq yarn \
-    && rm -rf /var/lib/apt/lists/* /usr/share/doc/* /usr/share/man/*
+# -- node.js --
+FROM node:8.2.1-alpine as nodejs
 
-# install Docker (in docker)
-RUN curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - \
-    && add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable" \
-    && apt-get update -yq && apt-get install -yq docker-ce \
-    && rm -rf /var/lib/apt/lists/* /usr/share/doc/* /usr/share/man/*
-
-# install aws-cli
-RUN apt-get update -yq \
-    && apt-get -yq install python-pip python-dev \
+RUN apk add --no-cache python py-pip \
     && pip install awscli \
-    && rm -rf /var/lib/apt/lists/* /usr/share/doc/* /usr/share/man/*
+    && apk --no-cache --purge -v del py-pip
+
+COPY --from=docker /tmp/docker/docker /opt/docker
+
+ENV PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:/opt/docker
+
+RUN echo "Versions:" \
+    && aws --version \
+    && yarn --version \
+    && node --version \
+    && docker --version

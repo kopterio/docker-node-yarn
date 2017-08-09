@@ -1,3 +1,3 @@
 #!/bin/sh
 
-docker build -t kopterio/node-yarn:8.2.1 .
+docker build -t kopterio/node-docker-aws:8.2.1-alpine .
